@@ -72,7 +72,10 @@ class CoNLLDataset(object):
                         words, tags = [], []
                 else:
                     ls = line.split(' ')
-                    word, tag = ls[0],ls[-1]
+                    if 'test' in self.filename:
+                        word, tag = ls[0], None
+                    else:
+                        word, tag = ls[0],ls[-1]
                     if self.processing_word is not None:
                         word = self.processing_word(word)
                     if self.processing_tag is not None:
@@ -107,6 +110,7 @@ def get_vocabs(datasets):
     for dataset in datasets:
         for words, tags in dataset:
             vocab_words.update(words)
+            if all([t is None for t in tags]): continue
             vocab_tags.update(tags)
     print("- done. {} tokens".format(len(vocab_words)))
     return vocab_words, vocab_tags
@@ -137,7 +141,7 @@ def get_glove_vocab(filename):
         filename: path to the glove vectors
 
     Returns:
-        vocab: set() of strings
+        vocab: set() of
     """
     print("Building vocab...")
     vocab = set()
@@ -320,8 +324,8 @@ def pad_sequences(sequences, pad_tok, nlevels=1):
                                             pad_tok, max_length)
 
     elif nlevels == 2:
-        max_length_word = max([max(map(lambda x: len(x), seq))
-                               for seq in sequences])
+        max_length_word =  33 #max([max(map(lambda x: len(x), seq))
+                           #    for seq in sequences])
         sequence_padded, sequence_length = [], []
         for seq in sequences:
             # all words are same length now

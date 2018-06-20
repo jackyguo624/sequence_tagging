@@ -141,15 +141,44 @@ class NERModel(BaseModel):
                 _output = tf.nn.bidirectional_dynamic_rnn(
                         cell_fw, cell_bw, char_embeddings,
                         sequence_length=word_lengths, dtype=tf.float32)
-
+                self._output = _output
                 # read and concat output
-                _, ((_, output_fw), (_, output_bw)) = _output
-                output = tf.concat([output_fw, output_bw], axis=-1)
+                #_, ((_, output_fw), (_, output_bw)) = _output
+                (output_fw, output_bw), ((a, output_s_fw), (b, output_s_bw)) = _output
+                '''
+                filter_size = [3, 5, 1, 3]
+                conv_stride = [1,2,5,1]
+                psize = [1, 2, 5, 1]
+                pstride = [1,2,5,1]
+                _s0 = tf.shape(output_fw)
+                output_fw = tf.reshape(output_fw, shape=[_s0[0], _s0[1], _s0[2], 1])
+                filter = tf.Variable(tf.random_normal(filter_size))
+                convfw = tf.nn.conv2d(output_fw, filter, strides=conv_stride, padding='VALID')
+                poolingfw = tf.nn.max_pool(convfw, ksize=psize, strides=pstride, padding='VALID')
+                _s1 = tf.shape(poolingfw)
+                poolingfw = tf.reshape(poolingfw, shape=[_s1[0], _s1[1]*_s1[2]*_s1[3]])
 
+                _s0 = tf.shape(output_bw)
+                output_bw = tf.reshape(output_bw, shape=[_s0[0], _s0[1], _s0[2], 1])
+                filter = tf.Variable(tf.random_normal(filter_size))
+                convbw = tf.nn.conv2d(output_bw, filter, strides=conv_stride, padding='VALID')
+                poolingbw = tf.nn.max_pool(convbw, ksize=psize, strides=pstride, padding='VALID')
+
+                _s1 = tf.shape(poolingbw)
+                poolingbw = tf.reshape(poolingbw, shape=[_s1[0], _s1[1]*_s1[2]*_s1[3]])
+                self.poolingbw = poolingbw
+                output = tf.concat([output_s_fw, output_s_bw, poolingfw, poolingbw], axis=-1) '''
+                output = tf.concat([output_s_fw, output_s_bw], axis=-1)
                 # shape = (batch size, max sentence length, char hidden size)
+                '''_s1 = tf.shape(poolingbw)
+                print(tf.to_int32(_s1[-1]))
+                self._s1 = _s1
+                self.config.hidden_size_char +=  96 #tf.to_int32(_s1[-1])'''
                 output = tf.reshape(output,
                         shape=[s[0], s[1], 2*self.config.hidden_size_char])
+                self.char_embeddings = output
                 word_embeddings = tf.concat([word_embeddings, output], axis=-1)
+
 
         self.word_embeddings =  tf.nn.dropout(word_embeddings, self.dropout)
 

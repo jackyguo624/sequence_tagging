@@ -71,11 +71,11 @@ class Config():
     use_pretrained = True
 
     # dataset
-    # filename_dev = "data/coNLL/eng/eng.testa.iob"
-    # filename_test = "data/coNLL/eng/eng.testb.iob"
-    # filename_train = "data/coNLL/eng/eng.train.iob"
+    filename_dev = "data/dev.eval"
+    filename_test = "data/test.eval"
+    filename_train = "data/train.eval"
 
-    filename_dev = filename_test = filename_train = "data/test.txt" # test
+    #filename_dev = filename_test = filename_train = "data/test.txt" # test
 
     max_iter = None # if not None, max number of examples in Dataset
 
@@ -86,7 +86,7 @@ class Config():
 
     # training
     train_embeddings = False
-    nepochs          = 15
+    nepochs          = 30
     dropout          = 0.5
     batch_size       = 20
     lr_method        = "adam"
@@ -96,9 +96,12 @@ class Config():
     nepoch_no_imprv  = 3
 
     # model hyperparameters
-    hidden_size_char = 100 # lstm on chars
+    hidden_size_char = 200 # lstm on chars
     hidden_size_lstm = 300 # lstm on word embeddings
 
     # NOTE: if both chars and crf, only 1.6x slower on GPU
     use_crf = True # if crf, training is 1.7x slower on CPU
     use_chars = True # if char embedding, training is 3.5x slower on CPU
+
+    predict_output = "predict/test"
+
